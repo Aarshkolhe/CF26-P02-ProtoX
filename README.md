@@ -94,18 +94,66 @@ compensating (undo) action.
 
 ## 4. Technology Stack
 
-| Layer | Technology | Notes |
-|---|---|---|
-| Backend / coordinator engine | Node.js (Express) or Python (FastAPI) | Hosts the workflow state machine, step executor, and timeout scheduler |
-| Database / state store | PostgreSQL | Tables for workflow instances, step history, idempotency keys, audit log |
-| Job scheduling | A delayed-job queue (e.g. BullMQ on Redis, or a Postgres-backed job table) | Drives approval timeouts and retries |
-| Frontend dashboard | React | Live workflow status, pending approvals, full audit trail view |
-| External service simulation | Mock REST APIs | Stand-ins for CRM, payment, and inventory systems used in the demo |
-| Notifications | Email / webhook | Delivers approval requests to a human approver |
+*This reflects what's actually implemented (`frontend/package.json`,
+`backend/package.json`), not the original proposal.*
 
-*Exact package choices may vary — this reflects the stack proposed for the
-hackathon build; adjust the table above to match what was actually
-implemented.*
+### Frontend (`frontend/`)
+
+| Package | Version | Role |
+|---|---|---|
+| React | 19.2.8 | UI |
+| TypeScript | 6.0.3 | Language, strict mode |
+| Vite | 8.2.2 | Dev server + build |
+| React Router | 7.18.2 | Client-side routing, URL-persisted filters |
+| Tailwind CSS | 4.3.3 (`@tailwindcss/vite`) | Styling, CSS-first (no `tailwind.config.js`) |
+| lucide-react | 1.34.0 | Icons |
+| oxlint | 1.79.0 | Linting |
+
+No state-management or data-fetching library (Redux, React Query, etc.) —
+state lives in a few React Contexts (`CoordinatorContext`, `IdentityContext`,
+`ToastContext`) backed by the native `fetch` and `EventSource` Web APIs.
+
+### Backend (`backend/`)
+
+| Package | Version | Role |
+|---|---|---|
+| Node.js | 24.x | Runtime |
+| Express | 5.2.1 | HTTP framework (REST + SSE routes) |
+| TypeScript | 6.0.3 | Language, strict mode, ESM (`NodeNext`) |
+| tsx | 4.23.12 | Dev runtime (`watch` mode) |
+| Prisma | 6.19.3 (`prisma` + `@prisma/client`) | ORM, migrations, typed query client |
+| Zod | 4.4.3 | Request body validation |
+| cors | 2.8.6 | CORS middleware |
+| dotenv | 17.4.2 | Env var loading |
+| Node's built-in `EventEmitter` | — | In-process pub/sub feeding the SSE stream |
+
+No queue/broker (Redis, BullMQ, RabbitMQ) — durable scheduling (retries,
+approval timeouts, compensation pacing) is a plain Postgres `jobs` table
+polled by an in-process interval; see §3.
+
+### Database
+
+**PostgreSQL 18**, accessed via Prisma. Five tables: `workflow_instances`,
+`step_history`, `idempotency_keys`, `audit_log`, `jobs`.
+
+### APIs
+
+- **REST** (`/api/workflows`) — trigger, list, get one, get its audit log,
+  submit an approval decision, reset demo data (`POST`/`GET`/`DELETE`).
+- **Server-Sent Events** (`/api/events`) — a `text/event-stream` connection
+  the frontend subscribes to via the native `EventSource` API for real-time
+  push; polling (15s) is only a fallback if that connection can't establish.
+- No GraphQL, gRPC, or WebSockets — plain REST + one-way SSE covers the
+  whole app.
+- **Mocked external services** — CRM/payment/inventory calls are simulated
+  in-process (`externalServices.ts`), gated by the same idempotency-key
+  mechanism a real integration would use.
+
+### Deployment (prepared, not yet live)
+
+A `render.yaml` Blueprint provisions all three pieces on
+[Render](https://render.com): managed Postgres, a Node web service for the
+backend, and a static site for the frontend build.
 
 ---
 
