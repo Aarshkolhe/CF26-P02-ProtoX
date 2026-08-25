@@ -34,11 +34,11 @@ export function Modal({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
+      <div className="animate-backdrop-in absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
       <div
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-md rounded-2xl border p-6 shadow-2xl"
+        className="animate-scale-in relative w-full max-w-md rounded-2xl border p-6 shadow-2xl"
         style={{ background: "var(--surface-raised)", borderColor: "var(--border)" }}
       >
         <button

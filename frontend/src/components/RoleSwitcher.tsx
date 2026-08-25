@@ -49,7 +49,7 @@ export function RoleSwitcher() {
     navigate("/");
   }
 
-  const pillBase = "rounded-md px-2.5 py-1 text-xs font-medium transition";
+  const pillBase = "rounded-md px-2.5 py-1 text-xs font-medium transition active:scale-95";
 
   return (
     <div ref={containerRef} className="relative flex items-center gap-0.5 rounded-lg border p-0.5" style={{ borderColor: "var(--border)" }}>
@@ -73,8 +73,8 @@ export function RoleSwitcher() {
       {editing && (
         <form
           onSubmit={confirmName}
-          className="absolute right-0 top-full z-50 mt-2 flex w-56 gap-1.5 rounded-lg border p-2 shadow-lg"
-          style={{ background: "var(--surface-raised)", borderColor: "var(--border)" }}
+          className="animate-scale-in absolute right-0 top-full z-50 mt-2 flex w-56 gap-1.5 rounded-lg border p-2 shadow-lg"
+          style={{ background: "var(--surface-raised)", borderColor: "var(--border)", transformOrigin: "top right" }}
         >
           <input
             value={draftName}

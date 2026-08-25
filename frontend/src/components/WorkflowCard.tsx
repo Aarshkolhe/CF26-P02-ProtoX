@@ -5,8 +5,9 @@ import { formatRelativeTime, formatVendorLabel } from "../lib/format";
 import { StatusBadge, STATUS_TOKENS } from "./StatusBadge";
 
 const LIVE_STATUSES = new Set(["running", "awaiting_approval", "compensating"]);
+const MAX_STAGGER_MS = 320;
 
-export function WorkflowCard({ workflow }: { workflow: WorkflowInstance }) {
+export function WorkflowCard({ workflow, index = 0 }: { workflow: WorkflowInstance; index?: number }) {
   const now = useNow();
   const succeeded = workflow.steps.filter((s) => s.status === "succeeded").length;
   const total = workflow.steps.length;
@@ -16,8 +17,8 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowInstance }) {
   return (
     <Link
       to={`/workflows/${workflow.id}`}
-      className="block rounded-xl border p-4 transition hover:border-[var(--border-strong)]"
-      style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+      className="hover-lift animate-fade-in-up block rounded-xl border p-4 hover:border-[var(--border-strong)]"
+      style={{ background: "var(--surface)", borderColor: "var(--border)", animationDelay: `${Math.min(index * 50, MAX_STAGGER_MS)}ms` }}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -36,7 +37,7 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowInstance }) {
       <div className="mt-3 flex items-center gap-2">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full" style={{ background: "var(--border)" }}>
           <div
-            className="h-full rounded-full transition-all"
+            className="h-full rounded-full transition-all duration-500 ease-out"
             style={{ width: `${(succeeded / total) * 100}%`, background: token.color }}
           />
         </div>

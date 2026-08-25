@@ -13,11 +13,13 @@ const SERVICE_ICONS: Record<string, LucideIcon> = {
 
 function StepRow({
   step,
+  index,
   isLast,
   onApprove,
   onReject,
 }: {
   step: StepInstance;
+  index: number;
   isLast: boolean;
   onApprove?: () => void;
   onReject?: () => void;
@@ -29,10 +31,10 @@ function StepRow({
   const isActive = step.status === "running" || step.status === "awaiting_approval" || step.status === "compensating";
 
   return (
-    <li className="relative flex gap-4 pb-8 last:pb-0">
+    <li className="animate-fade-in-up relative flex gap-4 pb-8 last:pb-0" style={{ animationDelay: `${index * 70}ms` }}>
       {!isLast && <span className="absolute left-[15px] top-8 h-full w-px" style={{ background: "var(--border)" }} aria-hidden />}
       <span
-        className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isActive ? "animate-pulse" : ""}`}
+        className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${isActive ? "animate-pulse" : ""}`}
         style={{ background: token.wash, color: token.color }}
       >
         <Icon size={15} />
@@ -78,11 +80,11 @@ function StepRow({
         </p>
 
         {canDecide && (
-          <div className="mt-3 flex gap-2">
+          <div className="animate-fade-in-up mt-3 flex gap-2">
             <button
               type="button"
               onClick={onApprove}
-              className="rounded-lg px-3 py-1.5 text-sm font-medium transition hover:brightness-110"
+              className="rounded-lg px-3 py-1.5 text-sm font-medium transition hover:brightness-110 hover:shadow-md active:scale-95"
               style={{ background: "var(--status-good)", color: "#ffffff" }}
             >
               Approve
@@ -90,7 +92,7 @@ function StepRow({
             <button
               type="button"
               onClick={onReject}
-              className="rounded-lg px-3 py-1.5 text-sm font-medium transition hover:brightness-110"
+              className="rounded-lg px-3 py-1.5 text-sm font-medium transition hover:brightness-110 hover:shadow-md active:scale-95"
               style={{ background: "var(--status-critical)", color: "#ffffff" }}
             >
               Reject
@@ -117,6 +119,7 @@ export function StepTimeline({
         <StepRow
           key={step.stepId}
           step={step}
+          index={i}
           isLast={i === workflow.steps.length - 1}
           onApprove={step.type === "approval" && onApprove ? () => onApprove(step.stepId) : undefined}
           onReject={step.type === "approval" && onReject ? () => onReject(step.stepId) : undefined}

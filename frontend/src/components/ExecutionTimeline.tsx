@@ -28,7 +28,7 @@ export function ExecutionTimeline({ workflow }: { workflow: WorkflowInstance }) 
 
       <div className="rounded-lg border" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
         <div className="divide-y" style={{ borderColor: "var(--border)" }}>
-          {workflow.steps.map((step) => {
+          {workflow.steps.map((step, i) => {
             const token = STATUS_TOKENS[step.status] ?? STATUS_TOKENS.pending;
             const segStart = step.startedAt ? new Date(step.startedAt).getTime() : null;
             const segEnd = step.endedAt ? new Date(step.endedAt).getTime() : segStart ? now : null;
@@ -38,14 +38,18 @@ export function ExecutionTimeline({ workflow }: { workflow: WorkflowInstance }) 
             const isLive = step.status === "running" || step.status === "awaiting_approval" || step.status === "compensating";
 
             return (
-              <div key={step.stepId} className="flex items-center gap-3 px-3 py-2">
+              <div
+                key={step.stepId}
+                className="animate-fade-in-up flex items-center gap-3 px-3 py-2"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
                 <span className="w-32 shrink-0 truncate text-xs" style={{ color: "var(--ink-secondary)" }}>
                   {step.name}
                 </span>
                 <div className="relative h-5 flex-1 overflow-hidden rounded" style={{ background: "var(--page)" }}>
                   {segStart != null && (
                     <div
-                      className={`absolute top-0 h-full rounded ${isLive ? "animate-pulse" : ""}`}
+                      className={`absolute top-0 h-full rounded transition-all duration-1000 ease-linear ${isLive ? "animate-pulse" : ""}`}
                       style={{ left: `${leftPct}%`, width: `${widthPct}%`, background: token.color }}
                       title={`${step.name}: ${formatDuration((segEnd ?? now) - segStart)}`}
                     />

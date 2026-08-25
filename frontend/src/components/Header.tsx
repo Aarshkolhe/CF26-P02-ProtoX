@@ -26,9 +26,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b backdrop-blur" style={{ background: "color-mix(in srgb, var(--page) 85%, transparent)", borderColor: "var(--border)" }}>
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <Link to="/" className="flex items-center gap-2.5">
+        <Link to="/" className="group flex items-center gap-2.5">
           <span
-            className="flex h-8 w-8 items-center justify-center rounded-full"
+            className="flex h-8 w-8 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6"
             style={{ background: "var(--accent-wash)", color: "var(--accent)" }}
           >
             <GitBranch size={16} />
@@ -61,7 +61,7 @@ export function Header() {
                     navigate("/");
                     resetAll().catch((err) => console.error("Failed to reset demo data:", err));
                   }}
-                  className="rounded-lg px-3 py-1.5 text-xs font-medium transition hover:brightness-110"
+                  className="rounded-lg px-3 py-1.5 text-xs font-medium transition hover:brightness-110 active:scale-95"
                   style={{ background: "var(--status-critical)", color: "#ffffff" }}
                 >
                   Confirm reset
@@ -70,7 +70,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={() => setConfirming(true)}
-                  className="rounded-lg border px-3 py-1.5 text-xs font-medium transition hover:bg-white/5"
+                  className="rounded-lg border px-3 py-1.5 text-xs font-medium transition hover:bg-white/5 active:scale-95"
                   style={{ borderColor: "var(--border)", color: "var(--ink-secondary)" }}
                 >
                   Reset demo data

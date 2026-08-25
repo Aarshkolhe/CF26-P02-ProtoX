@@ -40,7 +40,7 @@ export function WorkflowDetail() {
     <div className="mx-auto max-w-4xl px-4 py-8">
       <BackLink />
 
-      <div className="mt-3 flex items-start justify-between gap-3">
+      <div className="animate-fade-in-up mt-3 flex items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold" style={{ color: "var(--ink)" }}>
             {formatVendorLabel(workflow.context)}
@@ -69,11 +69,17 @@ export function WorkflowDetail() {
         </p>
       )}
 
-      <section className="mt-6 rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+      <section
+        className="animate-fade-in-up mt-6 rounded-xl border p-4"
+        style={{ background: "var(--surface)", borderColor: "var(--border)", animationDelay: "80ms" }}
+      >
         <ExecutionTimeline workflow={workflow} />
       </section>
 
-      <section className="mt-6 rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+      <section
+        className="animate-fade-in-up mt-6 rounded-xl border p-4"
+        style={{ background: "var(--surface)", borderColor: "var(--border)", animationDelay: "140ms" }}
+      >
         <h2 className="mb-4 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--ink-muted)" }}>
           Saga steps
         </h2>
@@ -84,7 +90,7 @@ export function WorkflowDetail() {
         />
       </section>
 
-      <section className="mt-6">
+      <section className="animate-fade-in-up mt-6" style={{ animationDelay: "200ms" }}>
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--ink-muted)" }}>
           Audit log
         </h2>

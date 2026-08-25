@@ -111,7 +111,7 @@ export function TriggerWorkflowModal({ open, onClose }: { open: boolean; onClose
         <button
           type="submit"
           disabled={submitting}
-          className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition hover:brightness-110 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition hover:brightness-110 hover:shadow-lg active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100"
           style={{ background: "var(--accent)", color: "var(--accent-ink)" }}
         >
           <Play size={15} fill="currentColor" />
