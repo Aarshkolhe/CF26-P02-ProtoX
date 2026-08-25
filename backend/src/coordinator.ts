@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "./db.js";
+import { workflowEvents } from "./events.js";
 import { callExternalService, notifyApprover } from "./externalServices.js";
 import { HttpError } from "./httpError.js";
 import { COMPENSATION_STEP_MS, MAX_SERVICE_ATTEMPTS, RETRY_BACKOFF_MS, VENDOR_ONBOARDING_STEPS } from "./scenario.js";
@@ -8,6 +9,7 @@ async function audit(workflowId: string, type: string, stepId: string | undefine
   await prisma.auditLogEntry.create({
     data: { workflowId, type, stepId: stepId ?? null, message },
   });
+  workflowEvents.emit("update", { workflowId, type, message });
 }
 
 async function getStep(workflowId: string, stepId: string) {

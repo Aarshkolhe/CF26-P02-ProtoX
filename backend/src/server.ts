@@ -5,6 +5,7 @@ import { resumeAll } from "./coordinator.js";
 import { prisma } from "./db.js";
 import { errorHandler } from "./errorHandler.js";
 import { startPoller } from "./poller.js";
+import { eventsRouter } from "./routes/events.js";
 import { workflowsRouter } from "./routes/workflows.js";
 
 const app = express();
@@ -18,6 +19,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/workflows", workflowsRouter);
+app.use("/api/events", eventsRouter);
 
 app.use(errorHandler);
 
