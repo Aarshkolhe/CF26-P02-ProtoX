@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import type { StepInstance, WorkflowInstance } from "../types";
 import { useNow } from "../hooks/useNow";
 import { formatCountdown } from "../lib/format";
+import { CopyButton } from "./CopyButton";
 import { STATUS_TOKENS, StatusBadge } from "./StatusBadge";
 
 const SERVICE_ICONS: Record<string, LucideIcon> = {
@@ -75,8 +76,9 @@ function StepRow({
           </p>
         )}
 
-        <p className="mt-1 font-mono text-xs" style={{ color: "var(--ink-muted)" }}>
+        <p className="mt-1 flex items-center gap-1 font-mono text-xs" style={{ color: "var(--ink-muted)" }}>
           key: {step.idempotencyKey}
+          <CopyButton value={step.idempotencyKey} label="Copy idempotency key" />
         </p>
 
         {canDecide && (

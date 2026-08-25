@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { useIdentity } from "../context/IdentityContext";
 import { useCoordinator, useWorkflow } from "../hooks/useCoordinator";
 import { AuditLogTable } from "../components/AuditLogTable";
+import { CopyButton } from "../components/CopyButton";
 import { ExecutionTimeline } from "../components/ExecutionTimeline";
 import { StatusBadge } from "../components/StatusBadge";
 import { StepTimeline } from "../components/StepTimeline";
@@ -45,9 +46,12 @@ export function WorkflowDetail() {
           <h1 className="text-xl font-semibold" style={{ color: "var(--ink)" }}>
             {formatVendorLabel(workflow.context)}
           </h1>
-          <p className="text-xs" style={{ color: "var(--ink-muted)" }}>
-            Vendor onboarding · {workflow.id} · billing ${workflow.context.billingAmount ?? "—"}
-            {workflow.context.requestedBy && ` · requested by ${workflow.context.requestedBy}`}
+          <p className="flex flex-wrap items-center gap-1 text-xs" style={{ color: "var(--ink-muted)" }}>
+            <span>
+              Vendor onboarding · {workflow.id} · billing ${workflow.context.billingAmount ?? "—"}
+              {workflow.context.requestedBy && ` · requested by ${workflow.context.requestedBy}`}
+            </span>
+            <CopyButton value={workflow.id} label="Copy workflow ID" />
           </p>
         </div>
         <StatusBadge status={workflow.status} />

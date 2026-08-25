@@ -1,5 +1,6 @@
 import { Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { matchesRequester, useIdentity } from "../context/IdentityContext";
 import { useCoordinator } from "../hooks/useCoordinator";
 import { StatRow } from "../components/StatRow";
@@ -19,8 +20,36 @@ export function Dashboard() {
   const { workflows, error } = useCoordinator();
   const { role, requesterName } = useIdentity();
   const [modalOpen, setModalOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  // Search/filter live in the URL (?q=&status=) so a filtered view is
+  // shareable/bookmarkable and survives a refresh.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const search = searchParams.get("q") ?? "";
+  const statusFilter = searchParams.get("status") ?? "all";
+
+  function setSearch(value: string) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value) next.set("q", value);
+        else next.delete("q");
+        return next;
+      },
+      { replace: true },
+    );
+  }
+
+  function setStatusFilter(value: string) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value && value !== "all") next.set("status", value);
+        else next.delete("status");
+        return next;
+      },
+      { replace: true },
+    );
+  }
 
   const isRequester = role === "requester";
   const ownedWorkflows = isRequester

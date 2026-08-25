@@ -3,14 +3,18 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useIdentity } from "../context/IdentityContext";
 import { useCoordinator } from "../hooks/useCoordinator";
+import { useWorkflowNotifications } from "../hooks/useWorkflowNotifications";
 import { RoleSwitcher } from "./RoleSwitcher";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
-  const { resetAll } = useCoordinator();
+  const { workflows, resetAll } = useCoordinator();
   const { role } = useIdentity();
   const navigate = useNavigate();
   const [confirming, setConfirming] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useWorkflowNotifications(workflows);
 
   useEffect(() => {
     if (!confirming) return;
@@ -44,6 +48,7 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <RoleSwitcher />
 
           {role === "admin" && (
