@@ -1,10 +1,13 @@
 import { GitBranch } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useIdentity } from "../context/IdentityContext";
 import { useCoordinator } from "../hooks/useCoordinator";
+import { RoleSwitcher } from "./RoleSwitcher";
 
 export function Header() {
   const { resetAll } = useCoordinator();
+  const { role } = useIdentity();
   const navigate = useNavigate();
   const [confirming, setConfirming] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,34 +43,40 @@ export function Header() {
           </span>
         </Link>
 
-        <div ref={containerRef} className="flex items-center gap-2">
-          {confirming && (
-            <span className="text-xs" style={{ color: "var(--ink-muted)" }}>
-              Clear all workflows?
-            </span>
-          )}
-          {confirming ? (
-            <button
-              type="button"
-              onClick={() => {
-                setConfirming(false);
-                navigate("/");
-                resetAll().catch((err) => console.error("Failed to reset demo data:", err));
-              }}
-              className="rounded-lg px-3 py-1.5 text-xs font-medium transition hover:brightness-110"
-              style={{ background: "var(--status-critical)", color: "#ffffff" }}
-            >
-              Confirm reset
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setConfirming(true)}
-              className="rounded-lg border px-3 py-1.5 text-xs font-medium transition hover:bg-white/5"
-              style={{ borderColor: "var(--border)", color: "var(--ink-secondary)" }}
-            >
-              Reset demo data
-            </button>
+        <div className="flex items-center gap-3">
+          <RoleSwitcher />
+
+          {role === "admin" && (
+            <div ref={containerRef} className="flex items-center gap-2">
+              {confirming && (
+                <span className="text-xs" style={{ color: "var(--ink-muted)" }}>
+                  Clear all workflows?
+                </span>
+              )}
+              {confirming ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirming(false);
+                    navigate("/");
+                    resetAll().catch((err) => console.error("Failed to reset demo data:", err));
+                  }}
+                  className="rounded-lg px-3 py-1.5 text-xs font-medium transition hover:brightness-110"
+                  style={{ background: "var(--status-critical)", color: "#ffffff" }}
+                >
+                  Confirm reset
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirming(true)}
+                  className="rounded-lg border px-3 py-1.5 text-xs font-medium transition hover:bg-white/5"
+                  style={{ borderColor: "var(--border)", color: "var(--ink-secondary)" }}
+                >
+                  Reset demo data
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

@@ -108,8 +108,8 @@ export function StepTimeline({
   onReject,
 }: {
   workflow: WorkflowInstance;
-  onApprove: (stepId: string) => void;
-  onReject: (stepId: string) => void;
+  onApprove?: (stepId: string) => void;
+  onReject?: (stepId: string) => void;
 }) {
   return (
     <ol>
@@ -118,8 +118,8 @@ export function StepTimeline({
           key={step.stepId}
           step={step}
           isLast={i === workflow.steps.length - 1}
-          onApprove={step.type === "approval" ? () => onApprove(step.stepId) : undefined}
-          onReject={step.type === "approval" ? () => onReject(step.stepId) : undefined}
+          onApprove={step.type === "approval" && onApprove ? () => onApprove(step.stepId) : undefined}
+          onReject={step.type === "approval" && onReject ? () => onReject(step.stepId) : undefined}
         />
       ))}
     </ol>

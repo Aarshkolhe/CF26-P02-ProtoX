@@ -1,6 +1,7 @@
 import { Building2, Clock, DollarSign, Play, UserRound } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useIdentity } from "../context/IdentityContext";
 import { useCoordinator } from "../hooks/useCoordinator";
 import { fieldInputClass, IconField } from "./IconField";
 import { Modal } from "./Modal";
@@ -13,6 +14,7 @@ const TIMEOUT_OPTIONS = [
 
 export function TriggerWorkflowModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { triggerWorkflow } = useCoordinator();
+  const { role, requesterName } = useIdentity();
   const navigate = useNavigate();
   const [vendorName, setVendorName] = useState("");
   const [amount, setAmount] = useState("12000");
@@ -20,6 +22,12 @@ export function TriggerWorkflowModal({ open, onClose }: { open: boolean; onClose
   const [timeoutMs, setTimeoutMs] = useState(TIMEOUT_OPTIONS[1].ms);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const lockedRequester = role === "requester" && requesterName ? requesterName : null;
+
+  useEffect(() => {
+    if (open && lockedRequester) setRequestedBy(lockedRequester);
+  }, [open, lockedRequester]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +38,7 @@ export function TriggerWorkflowModal({ open, onClose }: { open: boolean; onClose
         {
           vendorName: vendorName.trim() || `Vendor ${Math.floor(Math.random() * 1000)}`,
           billingAmount: amount,
-          requestedBy: requestedBy.trim() || "Unassigned",
+          requestedBy: lockedRequester ?? (requestedBy.trim() || "Unassigned"),
         },
         timeoutMs,
       );
@@ -74,7 +82,8 @@ export function TriggerWorkflowModal({ open, onClose }: { open: boolean; onClose
             value={requestedBy}
             onChange={(e) => setRequestedBy(e.target.value)}
             placeholder="J. Smith"
-            className={fieldInputClass}
+            disabled={Boolean(lockedRequester)}
+            className={`${fieldInputClass} disabled:opacity-70`}
           />
         </IconField>
 

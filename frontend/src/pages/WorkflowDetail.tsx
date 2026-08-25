@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useIdentity } from "../context/IdentityContext";
 import { useCoordinator, useWorkflow } from "../hooks/useCoordinator";
 import { AuditLogTable } from "../components/AuditLogTable";
 import { StatusBadge } from "../components/StatusBadge";
@@ -11,7 +12,9 @@ export function WorkflowDetail() {
   const { id } = useParams<{ id: string }>();
   const { workflow, auditLog, error } = useWorkflow(id);
   const { decideApproval } = useCoordinator();
+  const { role } = useIdentity();
   const [decisionError, setDecisionError] = useState<string | null>(null);
+  const canDecide = role === "admin";
 
   function handleDecision(stepId: string, decision: "approved" | "rejected") {
     if (!workflow) return;
@@ -59,6 +62,11 @@ export function WorkflowDetail() {
           {decisionError}
         </p>
       )}
+      {!canDecide && (
+        <p className="mt-3 text-xs" style={{ color: "var(--ink-muted)" }}>
+          Read-only — approvals are handled from the admin dashboard.
+        </p>
+      )}
 
       <section className="mt-6 rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
         <h2 className="mb-4 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--ink-muted)" }}>
@@ -66,8 +74,8 @@ export function WorkflowDetail() {
         </h2>
         <StepTimeline
           workflow={workflow}
-          onApprove={(stepId) => handleDecision(stepId, "approved")}
-          onReject={(stepId) => handleDecision(stepId, "rejected")}
+          onApprove={canDecide ? (stepId) => handleDecision(stepId, "approved") : undefined}
+          onReject={canDecide ? (stepId) => handleDecision(stepId, "rejected") : undefined}
         />
       </section>
 
