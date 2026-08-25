@@ -88,9 +88,14 @@ export function TriggerWorkflowModal({ open, onClose }: { open: boolean; onClose
         </IconField>
 
         <IconField label="Approval timeout" icon={Clock}>
-          <select value={timeoutMs} onChange={(e) => setTimeoutMs(Number(e.target.value))} className={fieldInputClass}>
+          <select
+            value={timeoutMs}
+            onChange={(e) => setTimeoutMs(Number(e.target.value))}
+            className={fieldInputClass}
+            style={{ background: "var(--surface-raised)", color: "var(--ink)" }}
+          >
             {TIMEOUT_OPTIONS.map((opt) => (
-              <option key={opt.ms} value={opt.ms}>
+              <option key={opt.ms} value={opt.ms} style={{ background: "var(--surface-raised)", color: "var(--ink)" }}>
                 {opt.label}
               </option>
             ))}

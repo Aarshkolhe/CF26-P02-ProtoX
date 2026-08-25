@@ -103,10 +103,11 @@ export function Dashboard() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-lg border border-[var(--border)] bg-transparent px-3 py-2 text-sm text-[var(--ink)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-wash)]"
+            className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-wash)]"
+            style={{ background: "var(--surface)", color: "var(--ink)" }}
           >
             {STATUS_FILTERS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+              <option key={opt.value} value={opt.value} style={{ background: "var(--surface)", color: "var(--ink)" }}>
                 {opt.label}
               </option>
             ))}
