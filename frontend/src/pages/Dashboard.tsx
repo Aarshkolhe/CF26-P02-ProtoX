@@ -6,7 +6,7 @@ import { TriggerWorkflowModal } from "../components/TriggerWorkflowModal";
 import { WorkflowCard } from "../components/WorkflowCard";
 
 export function Dashboard() {
-  const { workflows } = useCoordinator();
+  const { workflows, error } = useCoordinator();
   const [modalOpen, setModalOpen] = useState(false);
   const active = workflows.filter((w) => w.status !== "completed" && w.status !== "compensated");
   const finished = workflows.filter((w) => w.status === "completed" || w.status === "compensated");
@@ -33,10 +33,16 @@ export function Dashboard() {
           Trigger workflow
         </button>
         <p className="mt-3 text-xs" style={{ color: "var(--ink-muted)" }}>
-          State persists locally — refresh anytime to simulate a coordinator restart. In-flight
-          workflows resume automatically.
+          State is durably persisted by the coordinator — restarting the backend mid-workflow
+          resumes it automatically instead of losing progress.
         </p>
       </section>
+
+      {error && (
+        <p className="mt-6 rounded-lg border px-4 py-2 text-center text-sm" style={{ borderColor: "var(--status-warning)", color: "var(--status-warning)" }}>
+          {error} — retrying…
+        </p>
+      )}
 
       <section className="mt-10">
         <StatRow workflows={workflows} />

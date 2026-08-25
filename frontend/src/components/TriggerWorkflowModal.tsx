@@ -18,21 +18,31 @@ export function TriggerWorkflowModal({ open, onClose }: { open: boolean; onClose
   const [amount, setAmount] = useState("12000");
   const [requestedBy, setRequestedBy] = useState("");
   const [timeoutMs, setTimeoutMs] = useState(TIMEOUT_OPTIONS[1].ms);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const id = triggerWorkflow(
-      {
-        vendorName: vendorName.trim() || `Vendor ${Math.floor(Math.random() * 1000)}`,
-        billingAmount: amount,
-        requestedBy: requestedBy.trim() || "Unassigned",
-      },
-      timeoutMs,
-    );
-    setVendorName("");
-    setRequestedBy("");
-    onClose();
-    navigate(`/workflows/${id}`);
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const id = await triggerWorkflow(
+        {
+          vendorName: vendorName.trim() || `Vendor ${Math.floor(Math.random() * 1000)}`,
+          billingAmount: amount,
+          requestedBy: requestedBy.trim() || "Unassigned",
+        },
+        timeoutMs,
+      );
+      setVendorName("");
+      setRequestedBy("");
+      onClose();
+      navigate(`/workflows/${id}`);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Failed to trigger workflow");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -78,13 +88,20 @@ export function TriggerWorkflowModal({ open, onClose }: { open: boolean; onClose
           </select>
         </IconField>
 
+        {submitError && (
+          <p className="text-sm" style={{ color: "var(--status-critical)" }}>
+            {submitError}
+          </p>
+        )}
+
         <button
           type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition hover:brightness-110"
+          disabled={submitting}
+          className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition hover:brightness-110 disabled:opacity-60"
           style={{ background: "var(--accent)", color: "var(--accent-ink)" }}
         >
           <Play size={15} fill="currentColor" />
-          Trigger workflow
+          {submitting ? "Triggering…" : "Trigger workflow"}
         </button>
       </form>
     </Modal>

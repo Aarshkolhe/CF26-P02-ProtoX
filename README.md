@@ -111,14 +111,10 @@ implemented.*
 
 ## 5. Setup & Installation
 
-> Update the commands below once the actual repository structure is final —
-> this section assumes a standard Node.js backend + React frontend + Postgres
-> layout.
-
 ### Prerequisites
-- Node.js ≥ 18
-- PostgreSQL ≥ 14
-- npm or yarn
+- Node.js ≥ 20
+- PostgreSQL ≥ 14, running locally (or reachable via `DATABASE_URL`)
+- npm
 
 ### Backend
 
@@ -126,10 +122,16 @@ implemented.*
 cd backend
 npm install
 cp .env.example .env        # set DATABASE_URL, PORT, etc.
-npm run migrate             # creates workflow_instances, step_history,
-                             # idempotency_keys, audit_log tables
-npm run dev                 # starts the coordinator API
+npm run db:migrate          # creates workflow_instances, step_history,
+                             # idempotency_keys, audit_log, jobs tables
+npm run dev                 # starts the coordinator API on localhost:4000
 ```
+
+The API is a plain Express + Prisma service — no separate job queue or
+Redis. Approval timeouts, retry backoff, and compensation pacing are all
+driven by a `jobs` table and a poller that runs inside the same process, so
+recovering after a restart is just "the poller starts scanning again" (see
+`npm run db:studio` to inspect the tables directly, or `GET /health`).
 
 ### Frontend
 
@@ -139,14 +141,19 @@ npm install
 npm run dev                 # starts the dashboard on localhost:5173 (or similar)
 ```
 
-### Environment variables
+The frontend currently runs against its own in-browser mock coordinator
+(persisted to `localStorage`) rather than this backend — wiring it up to
+call the real API is the next step.
+
+### Environment variables (backend/.env)
 
 | Variable | Description |
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string |
-| `PORT` | Port for the coordinator API |
-| `APPROVAL_TIMEOUT_MINUTES` | Default timeout before an approval auto-escalates or auto-rejects |
-| `NOTIFICATION_WEBHOOK_URL` | Endpoint used to notify approvers |
+| `PORT` | Port for the coordinator API (default `4000`) |
+| `APPROVAL_TIMEOUT_MINUTES` | Default approval timeout when a trigger request doesn't specify one |
+| `NOTIFICATION_WEBHOOK_URL` | Optional webhook to POST approver notifications to; logs to the console if unset |
+| `CORS_ORIGIN` | Origin allowed to call the API (default `http://localhost:5173`) |
 
 ---
 

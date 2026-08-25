@@ -50,9 +50,9 @@ export function Header() {
             <button
               type="button"
               onClick={() => {
-                resetAll();
                 setConfirming(false);
                 navigate("/");
+                resetAll().catch((err) => console.error("Failed to reset demo data:", err));
               }}
               className="rounded-lg px-3 py-1.5 text-xs font-medium transition hover:brightness-110"
               style={{ background: "var(--status-critical)", color: "#ffffff" }}

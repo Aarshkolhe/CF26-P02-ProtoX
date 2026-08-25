@@ -1,4 +1,5 @@
 import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCoordinator, useWorkflow } from "../hooks/useCoordinator";
 import { AuditLogTable } from "../components/AuditLogTable";
@@ -8,15 +9,24 @@ import { formatVendorLabel } from "../lib/format";
 
 export function WorkflowDetail() {
   const { id } = useParams<{ id: string }>();
-  const { workflow, auditLog } = useWorkflow(id);
+  const { workflow, auditLog, error } = useWorkflow(id);
   const { decideApproval } = useCoordinator();
+  const [decisionError, setDecisionError] = useState<string | null>(null);
+
+  function handleDecision(stepId: string, decision: "approved" | "rejected") {
+    if (!workflow) return;
+    setDecisionError(null);
+    decideApproval(workflow.id, stepId, decision).catch((err) => {
+      setDecisionError(err instanceof Error ? err.message : "Failed to record decision");
+    });
+  }
 
   if (!workflow) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
         <BackLink />
         <p className="mt-6 text-sm" style={{ color: "var(--ink-muted)" }}>
-          Workflow not found.
+          {error ?? "Workflow not found."}
         </p>
       </div>
     );
@@ -39,14 +49,25 @@ export function WorkflowDetail() {
         <StatusBadge status={workflow.status} />
       </div>
 
+      {error && (
+        <p className="mt-3 text-xs" style={{ color: "var(--status-warning)" }}>
+          {error} — showing the last known state.
+        </p>
+      )}
+      {decisionError && (
+        <p className="mt-3 text-xs" style={{ color: "var(--status-critical)" }}>
+          {decisionError}
+        </p>
+      )}
+
       <section className="mt-6 rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
         <h2 className="mb-4 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--ink-muted)" }}>
           Saga steps
         </h2>
         <StepTimeline
           workflow={workflow}
-          onApprove={(stepId) => decideApproval(workflow.id, stepId, "approved")}
-          onReject={(stepId) => decideApproval(workflow.id, stepId, "rejected")}
+          onApprove={(stepId) => handleDecision(stepId, "approved")}
+          onReject={(stepId) => handleDecision(stepId, "rejected")}
         />
       </section>
 

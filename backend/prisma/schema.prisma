@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum WorkflowStatus {
+  running
+  awaiting_approval
+  completed
+  compensating
+  compensated
+  failed
+}
+
+enum StepType {
+  service
+  approval
+}
+
+enum StepStatus {
+  pending
+  running
+  awaiting_approval
+  succeeded
+  failed
+  compensating
+  compensated
+  skipped
+}
+
+enum ApprovalDecision {
+  approved
+  rejected
+  timeout
+}
+
+enum JobType {
+  approval_timeout
+  step_retry
+  compensation_step
+}
+
+enum JobStatus {
+  pending
+  done
+  cancelled
+}
+
+model WorkflowInstance {
+  id                String   @id @default(uuid())
+  workflowType      String   @map("workflow_type")
+  status            WorkflowStatus @default(running)
+  context           Json
+  approvalTimeoutMs Int      @map("approval_timeout_ms")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  steps    StepInstance[]
+  auditLog AuditLogEntry[]
+  jobs     Job[]
+
+  @@map("workflow_instances")
+}
+
+model StepInstance {
+  id               String   @id @default(uuid())
+  workflowId       String   @map("workflow_id")
+  workflow         WorkflowInstance @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  stepId           String   @map("step_id")
+  sequence         Int
+  name             String
+  type             StepType
+  service          String?
+  status           StepStatus @default(pending)
+  idempotencyKey   String   @unique @map("idempotency_key")
+  attempts         Int      @default(0)
+  startedAt        DateTime? @map("started_at")
+  endedAt          DateTime? @map("ended_at")
+  approvalDeadline DateTime? @map("approval_deadline")
+  decision         ApprovalDecision?
+  compensationName String?  @map("compensation_name")
+
+  jobs Job[]
+
+  @@unique([workflowId, stepId])
+  @@map("step_history")
+}
+
+// Guards every external service call: the same idempotency key is reused
+// across retries of the same step, so a successful effect is only ever
+// applied once even if the call is retried after a crash or timeout.
+model IdempotencyKey {
+  key       String   @id
+  response  Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("idempotency_keys")
+}
+
+model AuditLogEntry {
+  id         String   @id @default(uuid())
+  workflowId String   @map("workflow_id")
+  workflow   WorkflowInstance @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  timestamp  DateTime @default(now())
+  type       String
+  stepId     String?  @map("step_id")
+  message    String
+
+  @@map("audit_log")
+  @@index([workflowId])
+}
+
+// Durable scheduling for anything that must happen after a delay
+// (approval timeouts, retry backoff, compensation pacing). A poller scans
+// for due jobs, so recovery after a restart is just "the poller runs again"
+// rather than needing any in-memory timer to survive a crash.
+model Job {
+  id         String   @id @default(uuid())
+  workflowId String   @map("workflow_id")
+  workflow   WorkflowInstance @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  stepId     String   @map("step_id")
+  step       StepInstance @relation(fields: [workflowId, stepId], references: [workflowId, stepId])
+  type       JobType
+  status     JobStatus @default(pending)
+  runAt      DateTime @map("run_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("jobs")
+  @@index([status, runAt])
+}

@@ -1,4 +1,4 @@
-import type { StepType } from "../types";
+import type { StepType } from "@prisma/client";
 
 export interface StepBlueprint {
   id: string;
@@ -40,4 +40,9 @@ export const VENDOR_ONBOARDING_STEPS: StepBlueprint[] = [
   },
 ];
 
-export const DEFAULT_APPROVAL_TIMEOUT_MS = 45_000;
+export const DEFAULT_APPROVAL_TIMEOUT_MS = Number(process.env.APPROVAL_TIMEOUT_MINUTES ?? "1") * 60_000;
+
+export const RETRY_BACKOFF_MS = 4_000;
+export const MAX_SERVICE_ATTEMPTS = 3;
+export const COMPENSATION_STEP_MS = 1_500;
+export const JOB_POLL_INTERVAL_MS = 2_000;
