@@ -1,23 +1,45 @@
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { Plus, Search } from "lucide-react";
+import { useMemo, useState } from "react";
 import { matchesRequester, useIdentity } from "../context/IdentityContext";
 import { useCoordinator } from "../hooks/useCoordinator";
 import { StatRow } from "../components/StatRow";
 import { TriggerWorkflowModal } from "../components/TriggerWorkflowModal";
 import { WorkflowCard } from "../components/WorkflowCard";
 
+const STATUS_FILTERS = [
+  { value: "all", label: "All statuses" },
+  { value: "running", label: "Running" },
+  { value: "awaiting_approval", label: "Awaiting approval" },
+  { value: "compensating", label: "Compensating" },
+  { value: "completed", label: "Completed" },
+  { value: "compensated", label: "Compensated" },
+] as const;
+
 export function Dashboard() {
   const { workflows, error } = useCoordinator();
   const { role, requesterName } = useIdentity();
   const [modalOpen, setModalOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const isRequester = role === "requester";
-  const visibleWorkflows = isRequester
+  const ownedWorkflows = isRequester
     ? workflows.filter((w) => matchesRequester(w.context.requestedBy, requesterName))
     : workflows;
 
+  const visibleWorkflows = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return ownedWorkflows.filter((w) => {
+      const matchesQuery =
+        !query || (w.context.vendorName ?? "").toLowerCase().includes(query) || w.id.toLowerCase().includes(query);
+      const matchesStatus = statusFilter === "all" || w.status === statusFilter;
+      return matchesQuery && matchesStatus;
+    });
+  }, [ownedWorkflows, search, statusFilter]);
+
   const active = visibleWorkflows.filter((w) => w.status !== "completed" && w.status !== "compensated");
   const finished = visibleWorkflows.filter((w) => w.status === "completed" || w.status === "compensated");
+  const isFiltering = search.trim() !== "" || statusFilter !== "all";
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -51,9 +73,9 @@ export function Dashboard() {
           <Plus size={16} />
           Trigger workflow
         </button>
-        <p className="mt-3 text-xs" style={{ color: "var(--ink-muted)" }}>
-          State is durably persisted by the coordinator — restarting the backend mid-workflow
-          resumes it automatically instead of losing progress.
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-xs" style={{ color: "var(--ink-muted)" }}>
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: "var(--status-good)" }} />
+          Live — durably persisted by the coordinator, resumes automatically after a restart.
         </p>
       </section>
 
@@ -64,11 +86,36 @@ export function Dashboard() {
       )}
 
       <section className="mt-10">
-        <StatRow workflows={visibleWorkflows} />
+        <StatRow workflows={ownedWorkflows} />
       </section>
 
+      {ownedWorkflows.length > 0 && (
+        <section className="mt-6 flex flex-col gap-2 sm:flex-row">
+          <div className="relative flex-1">
+            <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--ink-muted)" }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by vendor or workflow ID…"
+              className="w-full rounded-lg border border-[var(--border)] bg-transparent py-2 pl-9 pr-3 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--ink-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-wash)]"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-lg border border-[var(--border)] bg-transparent px-3 py-2 text-sm text-[var(--ink)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-wash)]"
+          >
+            {STATUS_FILTERS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </section>
+      )}
+
       {active.length > 0 && (
-        <section className="mt-10">
+        <section className="mt-8">
           <h2 className="mb-3 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--ink-muted)" }}>
             In progress
           </h2>
@@ -95,9 +142,11 @@ export function Dashboard() {
 
       {visibleWorkflows.length === 0 && (
         <p className="mt-10 text-center text-sm" style={{ color: "var(--ink-muted)" }}>
-          {isRequester
-            ? "No requests yet — trigger one above to get started."
-            : "No workflows yet. Trigger one above to get started."}
+          {isFiltering
+            ? "No workflows match your search/filter."
+            : isRequester
+              ? "No requests yet — trigger one above to get started."
+              : "No workflows yet. Trigger one above to get started."}
         </p>
       )}
 

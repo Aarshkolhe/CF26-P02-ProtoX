@@ -1,12 +1,17 @@
 import { Link } from "react-router-dom";
 import type { WorkflowInstance } from "../types";
-import { formatVendorLabel } from "../lib/format";
+import { useNow } from "../hooks/useNow";
+import { formatRelativeTime, formatVendorLabel } from "../lib/format";
 import { StatusBadge, STATUS_TOKENS } from "./StatusBadge";
 
+const LIVE_STATUSES = new Set(["running", "awaiting_approval", "compensating"]);
+
 export function WorkflowCard({ workflow }: { workflow: WorkflowInstance }) {
+  const now = useNow();
   const succeeded = workflow.steps.filter((s) => s.status === "succeeded").length;
   const total = workflow.steps.length;
   const token = STATUS_TOKENS[workflow.status] ?? STATUS_TOKENS.pending;
+  const isLive = LIVE_STATUSES.has(workflow.status);
 
   return (
     <Link
@@ -20,10 +25,13 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowInstance }) {
             {formatVendorLabel(workflow.context)}
           </p>
           <p className="text-xs" style={{ color: "var(--ink-muted)" }}>
-            Vendor onboarding · {workflow.id.slice(0, 8)}
+            Vendor onboarding · {workflow.id.slice(0, 8)} · {formatRelativeTime(workflow.updatedAt, now)}
           </p>
         </div>
-        <StatusBadge status={workflow.status} />
+        <span className="flex items-center gap-1.5">
+          {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: token.color }} />}
+          <StatusBadge status={workflow.status} />
+        </span>
       </div>
       <div className="mt-3 flex items-center gap-2">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full" style={{ background: "var(--border)" }}>

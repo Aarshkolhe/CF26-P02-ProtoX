@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { useIdentity } from "../context/IdentityContext";
 import { useCoordinator, useWorkflow } from "../hooks/useCoordinator";
 import { AuditLogTable } from "../components/AuditLogTable";
+import { ExecutionTimeline } from "../components/ExecutionTimeline";
 import { StatusBadge } from "../components/StatusBadge";
 import { StepTimeline } from "../components/StepTimeline";
 import { formatVendorLabel } from "../lib/format";
@@ -67,6 +68,10 @@ export function WorkflowDetail() {
           Read-only — approvals are handled from the admin dashboard.
         </p>
       )}
+
+      <section className="mt-6 rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <ExecutionTimeline workflow={workflow} />
+      </section>
 
       <section className="mt-6 rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
         <h2 className="mb-4 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--ink-muted)" }}>
