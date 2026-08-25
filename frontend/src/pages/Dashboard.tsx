@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { matchesRequester, useIdentity } from "../context/IdentityContext";
 import { useCoordinator } from "../hooks/useCoordinator";
+import { AnimatedBackground } from "../components/AnimatedBackground";
 import { StatRow } from "../components/StatRow";
 import { TriggerWorkflowModal } from "../components/TriggerWorkflowModal";
 import { WorkflowCard } from "../components/WorkflowCard";
@@ -71,7 +72,8 @@ export function Dashboard() {
   const isFiltering = search.trim() !== "" || statusFilter !== "all";
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="relative z-10 mx-auto max-w-5xl px-4 py-10">
+      <AnimatedBackground />
       <section className="text-center">
         <h1
           className="animate-fade-in-up text-3xl font-semibold tracking-tight sm:text-4xl"
